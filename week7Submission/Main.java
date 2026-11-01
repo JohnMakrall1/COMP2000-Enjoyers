@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.swing.*;
 
@@ -12,19 +13,75 @@ public class Main extends JFrame {
     private final JList<Human> humanList = new JList<>(humanListModel);
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Main::new);
+        SwingUtilities.invokeLater(Main::showTransmissionMenu);
+    }
+
+    private static void showTransmissionMenu() {
+        JFrame menu = new JFrame("Choose Transmission Type");
+        menu.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        menu.setLayout(new BorderLayout(10, 10));
+
+        JComboBox<TransmissionOption> transmissionOptions = new JComboBox<>();
+        transmissionOptions.addItem(new TransmissionOption(
+                "Direct transmission", DirectTransmission::new));
+        transmissionOptions.addItem(new TransmissionOption(
+                "Airborne transmission", AirborneTransmission::new));
+
+        JLabel prompt = new JLabel("Select a transmission type:");
+        prompt.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
+        transmissionOptions.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+
+        JButton runButton = new JButton("Run");
+        runButton.addActionListener(event -> {
+            TransmissionOption selectedOption =
+                    (TransmissionOption) transmissionOptions.getSelectedItem();
+            if (selectedOption != null) {
+                menu.dispose();
+                new Main(selectedOption.createStrategy());
+            }
+        });
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(runButton);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        menu.add(prompt, BorderLayout.NORTH);
+        menu.add(transmissionOptions, BorderLayout.CENTER);
+        menu.add(buttonPanel, BorderLayout.SOUTH);
+        menu.pack();
+        menu.setLocationRelativeTo(null);
+        menu.setVisible(true);
+    }
+
+    private static class TransmissionOption {
+        private final String name;
+        private final Supplier<TransmissionStrategy> strategyFactory;
+
+        TransmissionOption(String name, Supplier<TransmissionStrategy> strategyFactory) {
+            this.name = name;
+            this.strategyFactory = strategyFactory;
+        }
+
+        TransmissionStrategy createStrategy() {
+            return strategyFactory.get();
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     class Canvas extends JPanel {
         Grid grid = new Grid();
-        Disease disease = new Disease(0.5, 5, 14, new DirectTransmission());
-        //Disease disease = new Disease(0.5, 5, 14, new AirborneTransmission());
+        Disease disease;
         List<Human> humans = new ArrayList<>();
         int infected = 0;
         int healthy = 0;
         int daysPassed = 0;
 
-        public Canvas() {
+        public Canvas(TransmissionStrategy transmissionStrategy) {
+            disease = new Disease(0.5, 5, 14, transmissionStrategy);
             setPreferredSize(new Dimension(
                     grid.cols * Cell.size + 10,
                     grid.rows * Cell.size + 10));
@@ -163,10 +220,10 @@ public class Main extends JFrame {
             }
         }
     }
-        private Main(){
+        private Main(TransmissionStrategy transmissionStrategy){
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             this.setLayout(new BorderLayout());
-            Canvas canvas = new Canvas();
+            Canvas canvas = new Canvas(transmissionStrategy);
             population.setPreferredSize(new Dimension(180, 100));
             population.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             this.add(canvas, BorderLayout.CENTER);
