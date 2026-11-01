@@ -1,13 +1,14 @@
 /**
- * Defines the behaviour of a disease transmission strategy.
- *
- * Different transmission strategies can implement this interface
- * using their own rules to determine whether a disease is
- * successfully transmitted from one human to another.
- *
- * The @FunctionalInterface annotation indicates that this interface
- * has exactly one abstract method and can therefore be implemented
- * using a lambda expression when appropriate.
+ * Defines the behaviour for a disease transmission strategy.
+ * 
+ * Different implementations can use different rules to determine whether
+ * a disease is transmitted from one human to another.
+ * 
+ * This interface supports the Strategy design pattern, by allowing the
+ * transmission algorithm to be changed without modifying the Disease class.
+ * 
+ * The @FunctionalInterface annotation also allows strategies to be 
+ * implemented using lambda expressions.
  */
 @FunctionalInterface
 public interface TransmissionStrategy {
@@ -17,12 +18,13 @@ public interface TransmissionStrategy {
     }
 
     /**
-     * Attempts to transmit a disease from one human to another.
+     * Attempts to transmit a disease from an uninfected human to a target human.
      *
      * @param source the human who may transmit the disease
      * @param target the human who may receive the disease
      * @param disease the disease being transmitted
      * @return true if transmission succeeds, false otherwise
+     * @throws IllegalArgumentException if any argument is null
      */
     boolean transmit(Human source, Human target, Disease disease);
 }
