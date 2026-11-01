@@ -12,11 +12,8 @@ public class Human extends Actor {
     private static final int AIRBORNE_TRAIL_LENGTH = 6;
 
     private AgeGroup age;
-    //private double age = 0.1; // placeholder for age group, will be set by the simulation
-    private double immunity;
     public boolean infected = false;
     private double health; // cannot go outside range 0.99-->0.5
-    // private double mortality = 0.1; // placeholder for mortality rate, dunno if needed elsewhere besides infect method
     private boolean contagious = false; // For incubationPeriod, since humans aernt contagious when the disease is still incubating
     private int infectionCounter = 0; // To count it up to the set number, when it hits the number set contagious to true
     private int incubationCounter = 0; // To count it up to the set number, when it hits the number set contagious to true
