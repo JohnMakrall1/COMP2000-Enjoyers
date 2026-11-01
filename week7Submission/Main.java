@@ -2,9 +2,9 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.*;
-import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.stream.Collectors;
+import javax.swing.*;
 
 public class Main extends JFrame {
     private final JLabel population = new JLabel();
@@ -17,6 +17,8 @@ public class Main extends JFrame {
 
     class Canvas extends JPanel {
         Grid grid = new Grid();
+        Disease disease = new Disease(0.5, 5, 14, new DirectTransmission());
+        //Disease disease = new Disease(0.5, 5, 14, new AirborneTransmission());
         List<Human> humans = new ArrayList<>();
         int infected = 0;
         int healthy = 0;
@@ -41,10 +43,9 @@ public class Main extends JFrame {
             }
 
             updatePopulationCounts();
-            Disease disease = new Disease(0.5, 5, 14, new DirectTransmission());
             Timer timer = new Timer(200, event -> {
                 for (Human human : humans) {
-                    human.move(grid, humans);
+                    human.move(grid, humans, disease.getTransmissionStrategy());
                 }
                 for (Human human : humans) {
                     human.infectionChecker(disease);

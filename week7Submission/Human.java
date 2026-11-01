@@ -9,6 +9,8 @@ import java.util.List;
 //Add patient Zero to start of array list of individuals
 public class Human extends Actor {
 
+    private static final int AIRBORNE_TRAIL_LENGTH = 6;
+
     private AgeGroup age;
     //private double age = 0.1; // placeholder for age group, will be set by the simulation
     private double immunity;
@@ -26,6 +28,7 @@ public class Human extends Actor {
     int randomNum = rand.nextInt(2); // generates a random number between 0 and 1 to determine randomly whether humann
     // is infected or not at the start of the simulation
     Cell prevLoc; //previous Cell location
+    private final List<Cell> airborneTrail = new ArrayList<>();
 
     public Human(Cell inLoc) {
 
@@ -82,7 +85,7 @@ public class Human extends Actor {
         return false;
     }
 
-    public void move(Grid grid, List<Human> humans) {
+    public void move(Grid grid, List<Human> humans, TransmissionStrategy transmissionStrategy) {
         int currentRow = -1;
         int currentCol = -1;
 
@@ -136,8 +139,46 @@ public class Human extends Actor {
         // Choose one of the available cells at random, if any exist
         if (!possibleCells.isEmpty()) {
             prevLoc = this.loc;
+            if (transmissionStrategy.usesAirborneTrail()) {
+                recordAirborneTrail(prevLoc);
+            }
             setLocation(possibleCells.get(rand.nextInt(possibleCells.size())));
         }
+    }
+
+    private void recordAirborneTrail(Cell cell) {
+        if (!isInfected()) {
+            return;
+        }
+
+        airborneTrail.add(cell);
+        if (airborneTrail.size() > AIRBORNE_TRAIL_LENGTH) {
+            Cell expiredCell = airborneTrail.remove(0);
+            if (!containsAirborneCell(expiredCell)) {
+                expiredCell.removeAirborneSource(this);
+            }
+        }
+        cell.addAirborneSource(this);
+    }
+
+    public boolean hasAirborneTrailAt(Cell cell) {
+        return containsAirborneCell(cell);
+    }
+
+    private boolean containsAirborneCell(Cell cell) {
+        for (Cell trailCell : airborneTrail) {
+            if (trailCell == cell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void clearAirborneTrail() {
+        for (Cell cell : airborneTrail) {
+            cell.removeAirborneSource(this);
+        }
+        airborneTrail.clear();
     }
 
     public void infectNearby(List<Human> humans, Disease disease) {
@@ -197,6 +238,7 @@ public class Human extends Actor {
                 this.contagious = false;
                 this.color = Color.GREEN;
                 this.infectionCounter = 0;
+                clearAirborneTrail();
             }
 
         }

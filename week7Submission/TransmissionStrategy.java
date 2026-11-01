@@ -12,6 +12,10 @@
 @FunctionalInterface
 public interface TransmissionStrategy {
 
+    default boolean usesAirborneTrail() {
+        return false;
+    }
+
     /**
      * Attempts to transmit a disease from one human to another.
      *

@@ -3,8 +3,8 @@ import java.awt.Graphics;
 
 public class Grid {
     //fields
-    int rows = 30;
-    int cols = 30;
+    int rows = 35;
+    int cols = 35;
     Cell[][] cells = new Cell[rows][cols];
 
     //constructor
