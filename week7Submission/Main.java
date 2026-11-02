@@ -22,12 +22,13 @@ public class Main extends JFrame {
         menu.setLayout(new BorderLayout(10, 10));
 
         JComboBox<TransmissionOption> transmissionOptions = new JComboBox<>();
-        transmissionOptions.addItem(new TransmissionOption(
-                "Direct transmission", DirectTransmission::new));
-        transmissionOptions.addItem(new TransmissionOption(
-                "Airborne transmission", AirborneTransmission::new));
 
-        JLabel prompt = new JLabel("Select a transmission type:");
+        transmissionOptions.addItem(new TransmissionOption(
+                "COVID (Airborne)", COVID::new));
+        transmissionOptions.addItem(new TransmissionOption(
+                "Ringworm (Direct)", Ringworm::new));
+
+        JLabel prompt = new JLabel("Select a disease:");
         prompt.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         transmissionOptions.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 
@@ -37,7 +38,7 @@ public class Main extends JFrame {
                     (TransmissionOption) transmissionOptions.getSelectedItem();
             if (selectedOption != null) {
                 menu.dispose();
-                new Main(selectedOption.createStrategy());
+                new Main(selectedOption.createDisease());
             }
         });
 
@@ -55,15 +56,15 @@ public class Main extends JFrame {
 
     private static class TransmissionOption {
         private final String name;
-        private final Supplier<TransmissionStrategy> strategyFactory;
+        private final Supplier<Disease> diseaseFactory;
 
-        TransmissionOption(String name, Supplier<TransmissionStrategy> strategyFactory) {
+        TransmissionOption(String name, Supplier<Disease> diseaseFactory) {
             this.name = name;
-            this.strategyFactory = strategyFactory;
+            this.diseaseFactory = diseaseFactory;
         }
 
-        TransmissionStrategy createStrategy() {
-            return strategyFactory.get();
+        Disease createDisease() {
+            return diseaseFactory.get();
         }
 
         @Override
@@ -80,8 +81,8 @@ public class Main extends JFrame {
         int healthy = 0;
         int daysPassed = 0;
 
-        public Canvas(TransmissionStrategy transmissionStrategy) {
-            disease = new Disease(0.5, 5, 14, transmissionStrategy);
+        public Canvas(Disease disease) {
+            this.disease = disease;
             setPreferredSize(new Dimension(
                     grid.cols * Cell.size + 10,
                     grid.rows * Cell.size + 10));
@@ -220,10 +221,10 @@ public class Main extends JFrame {
             }
         }
     }
-        private Main(TransmissionStrategy transmissionStrategy){
+        private Main(Disease disease){
             this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             this.setLayout(new BorderLayout());
-            Canvas canvas = new Canvas(transmissionStrategy);
+            Canvas canvas = new Canvas(disease);
             population.setPreferredSize(new Dimension(180, 100));
             population.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             this.add(canvas, BorderLayout.CENTER);
