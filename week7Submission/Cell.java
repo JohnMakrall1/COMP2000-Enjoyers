@@ -21,7 +21,7 @@ public class Cell extends Rectangle {
     //methods
     public void paint(Graphics g) {
 
-        g.setColor(airborneSources.isEmpty() ? Color.WHITE : new Color(210, 235, 255));
+        g.setColor(airborneSources.isEmpty() ? Color.WHITE : new Color(255, 219, 187));
         g.fillRect(x,y,size,size);
         g.setColor(Color.BLACK);
         g.drawRect(x,y,size,size);

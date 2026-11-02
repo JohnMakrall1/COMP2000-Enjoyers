@@ -26,7 +26,7 @@ public class Main extends JFrame {
         transmissionOptions.addItem(new TransmissionOption(
                 "COVID (Airborne)", COVID::new));
         transmissionOptions.addItem(new TransmissionOption(
-                "Chickenpox (Direct)", Chickenpox::new));
+                "Ringworm (Direct)", Ringworm::new));
 
         JLabel prompt = new JLabel("Select a disease:");
         prompt.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
