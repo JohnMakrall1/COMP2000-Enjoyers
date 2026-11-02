@@ -12,3 +12,19 @@ averagingInt returns the average of an int property, while summarizingInt and su
 
 ## Custom collectors
 Collector.of() builds your own collector from a supplier (creates the container), an accumulator (adds an element), a combiner (merges two containers) and an optional finisher (converts the final result). This is used when no built-in collector fits, e.g. collecting into a custom data structure.
+
+## Additional Notes
+In this IRAT, I learned how to use Java Streams to filter, sort, and group data. I also learned about collectors, which can be used to collect data into lists and maps or count elements. I also learned the difference between stateful and stateless operations and that streams need a terminal operation to process their elements.
+For our code, we implemented a collector in our updatePopulationCounts method which handled counting all the infected humans, the old method was:
+ for (Human human : humans) {
+                //     if (human.isInfected()) {
+                //         infected++;
+                //     } else {
+                //         healthy++;
+                //     }
+                // }
+
+We replaced it with  Map<Boolean, Long> infected = humans.stream().collect(Collectors.groupingBy(human->human.isInfected(),Collectors.counting()));
+
+It does the same function but with a different implementation.
+
