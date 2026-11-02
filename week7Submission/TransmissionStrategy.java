@@ -13,6 +13,16 @@
 @FunctionalInterface
 public interface TransmissionStrategy {
 
+    /**
+     * Indicates wether this strategy uses airborne trails.
+     * 
+     * Direct transmission does not require airborne trail tracking,
+     * so the default implementation returns false.
+     * 
+     * AirborneTransmission overrides this method to return true.
+     * 
+     * @return true if the strategy uses airborne trails; otherwise, false
+     */
     default boolean usesAirborneTrail() {
         return false;
     }
