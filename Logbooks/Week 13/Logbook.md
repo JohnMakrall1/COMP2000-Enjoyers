@@ -1,8 +1,9 @@
+# Week 13
+
 Notes from at least two presentations by other students. 
 One design idea or technique you saw that you wish you had tried. 
 
-
-TEAM B 
+## TEAM B 
 Drawf fortress, simulates different nations capturing tiles of neighboring landlots with specific tiles that have benefits i.e. tree tiles has benefits for nations that capture areas surrounding. Spoke about incomplete ideas and future design plans
 
 Function: get playable border tiles → convert function into using lambdas and streams
@@ -13,7 +14,7 @@ Forest fire mechanic burns neighbouring tree slots and injures nations within it
 
 One design idea or technique we wish we had was…
 
-Team 2 
+## Team 2 
 Basic predator prey program
 Need to work on gui
 Three types of animals
@@ -54,6 +55,5 @@ Extensive and shows rules between all entities, cavemen, dinosaurs and cats
 Parallel stream 
 If a cavemen is being attacked, it can look for allies to help fight dinosaurs 
 
-
-
-
+# Reflection
+I learned how the Strategy pattern lets the simulation switch between direct and airborne transmission without putting both rules in one class. I am proud that the airborne mode uses each infected human’s recent movement trail, so random movement can create different patterns of spread. If I started again, I would coordinate branches and integrate shared interfaces earlier to reduce placeholders and make it easier to combine our work.
