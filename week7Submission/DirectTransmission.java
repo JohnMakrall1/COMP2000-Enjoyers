@@ -1,59 +1,100 @@
 import java.util.Random;
 import java.util.function.ToDoubleBiFunction;
-import java.util.stream.IntStream;
 
 /**
  * Implements direct-contact disease transmission.
  *
- * For direct transmission to occur:
- * 1. The source must already be infected.
- * 2. The target must not already be infected.
- * 3. The source and target must be within the contact radius.
- * 4. The transmission probability check must succeed.
+ * Direct transmission occurs when:
+ * 1. The source human is infected.
+ * 2. The target is a different human who is not already infected.
+ * 3. Both humans occupy cells within the contact radius.
+ * 4. The random transmission probability check succeeds.
  *
- * This class implements TransmissionStrategy, allowing the Disease
- * class to use different transmission methods polymorphically.
+ * This class implements TransmissionStrategy, allowing it to be
+ * selected interchangeably with other transmission methods,
+ * such as AirborneTransmission.
  */
 public class DirectTransmission implements TransmissionStrategy {
 
-    // Number of grid cells away that is considered close enough
-    // for direct transmission.
+    /**
+     * Maximum Manhattan distance between humans for direct contact.
+     * A radius of 1 allows horizontally or vertically adjacent cells.
+     */
     private static final int CONTACT_RADIUS = 1;
 
-    // Random number generator used to determine whether
-    // a transmission attempt succeeds.
+    /** Random number generator for transmission probability checks. */
     private final Random random = new Random();
 
     /**
-     * Lambda expression used to calculate the transmission
-     * probability for a particular disease and target human.
+     * Calculates the transmission probability using the disease's
+     * infection rate and the target human's health.
      *
      * ToDoubleBiFunction accepts two arguments and returns a double.
-     * Here, the arguments are a Disease and a target Human, and the
-     * result is the calculated transmission probability.
+     * Using a lambda keeps the probability calculation separate from
+     * the main transmission procedure.
      */
-    private final ToDoubleBiFunction<Disease, Human> probabilityCalculator =
-            (disease, target) ->
-                    disease.getInfectionRate() * target.health();
+    private final ToDoubleBiFunction<Disease, Human> probabilityCalculator;
 
     /**
-     * Attempts to transmit a disease directly from the source
-     * human to the target human.
+     * Creates a direct transmission strategy using the default
+     * probability calculation.
      *
-     * @param source the human who may transmit the disease
+     * This constructor maintains compatibility with existing code,
+     * including the transmission selection menu in Main.
+     */
+    public DirectTransmission() {
+        this((disease, target) ->
+                disease.getInfectionRate() * target.health());
+    }
+
+    /**
+     * Creates a direct transmission strategy using a supplied
+     * probability calculation.
+     *
+     * This allows alternative probability rules to be introduced
+     * using lambda expressions without changing the transmission
+     * algorithm itself.
+     *
+     * @param probabilityCalculator function used to calculate
+     *                              transmission probability
+     * @throws IllegalArgumentException if the calculator is null
+     */
+    public DirectTransmission(
+            ToDoubleBiFunction<Disease, Human> probabilityCalculator) {
+
+        if (probabilityCalculator == null) {
+            throw new IllegalArgumentException(
+                    "Probability calculator cannot be null.");
+        }
+
+        this.probabilityCalculator = probabilityCalculator;
+    }
+
+    /**
+     * Attempts to transmit a disease directly from one human
+     * to another.
+     *
+     * The method validates its arguments, checks infection status
+     * and contact distance, then performs a random probability check.
+     *
+     * @param source the human attempting to transmit the disease
      * @param target the human who may receive the disease
      * @param disease the disease being transmitted
-     * @return true if transmission succeeds, false otherwise
+     * @return true if transmission succeeds; otherwise, false
      * @throws IllegalArgumentException if any argument is null
      */
     @Override
     public boolean transmit(Human source, Human target, Disease disease) {
 
-        // Validate the arguments before attempting transmission.
+        // Validate arguments before attempting transmission.
         if (source == null || target == null || disease == null) {
             throw new IllegalArgumentException(
-                    "Source, target, and disease cannot be null."
-            );
+                    "Source, target, and disease cannot be null.");
+        }
+
+        // A human cannot transmit the disease to themselves.
+        if (source == target) {
+            return false;
         }
 
         // The source must already be infected.
@@ -61,28 +102,24 @@ public class DirectTransmission implements TransmissionStrategy {
             return false;
         }
 
-        // The target must not already be infected.
+        // Do not attempt to infect an already infected human.
         if (target.isInfected()) {
             return false;
         }
 
-        // The two humans must be close enough for direct contact.
+        // Direct transmission requires the humans to be nearby.
         if (!withinContactRange(source, target)) {
             return false;
         }
 
-        // Calculate the probability using the disease's infection
-        // rate and the target human's health value.
+        // Calculate the probability using the configured function.
         double probability =
                 calculateTransmissionProbability(disease, target);
 
-        // Generate a random value between 0.0 (inclusive)
-        // and 1.0 (exclusive). Transmission succeeds when the
-        // random value is lower than the calculated probability.
+        // Compare a random value against the transmission probability.
         if (random.nextDouble() < probability) {
 
-            // Use Human's infect method rather than directly changing
-            // its infection state, preserving encapsulation.
+            // Delegate infection state changes to the Human class.
             target.infect(disease);
 
             return true;
@@ -93,62 +130,50 @@ public class DirectTransmission implements TransmissionStrategy {
 
     /**
      * Determines whether two humans are close enough for
-     * direct transmission.
+     * direct-contact transmission.
      *
-     * Human inherits its Cell location from Actor.
-     * Cell stores its position using x and y coordinates.
+     * Manhattan distance is calculated by adding the horizontal
+     * and vertical distances between their grid cells.
      *
-     * The distance is measured using Manhattan distance, which
-     * adds the horizontal and vertical grid-cell distances.
-     * Diagonally adjacent cells are therefore not considered
-     * within the contact radius of one.
+     * Diagonally adjacent cells are not considered within a
+     * contact radius of one.
      *
-     * @param source the human who may transmit the disease
-     * @param target the human who may receive the disease
-     * @return true if the humans are within the contact radius
+     * @param source the human attempting to transmit the disease
+     * @param target the potential recipient
+     * @return true if both humans have locations within contact range
      */
     private boolean withinContactRange(Human source, Human target) {
 
-        // Obtain the cells occupied by each human.
         Cell sourceCell = source.loc;
         Cell targetCell = target.loc;
 
-        // A human without a location cannot participate
-        // in spatial transmission.
+        // Humans without valid locations cannot make direct contact.
         if (sourceCell == null || targetCell == null) {
             return false;
         }
 
-        // Convert pixel-coordinate differences into grid-cell
-        // distances. This assumes the cells are aligned to the grid.
+        // Convert pixel-coordinate differences into grid-cell distances.
         int columnDistance =
                 Math.abs(sourceCell.x - targetCell.x) / Cell.size;
 
         int rowDistance =
                 Math.abs(sourceCell.y - targetCell.y) / Cell.size;
 
-        // Use an IntStream to sum the horizontal and vertical
-        // distances. Ordinary addition would be simpler for only
-        // two values, but this demonstrates a stream operation.
-        int distance = IntStream
-                .of(columnDistance, rowDistance)
-                .sum();
+        // Manhattan distance = horizontal distance + vertical distance.
+        int distance = columnDistance + rowDistance;
 
         return distance <= CONTACT_RADIUS;
     }
 
     /**
-     * Calculates the probability of transmission.
+     * Calculates and validates the transmission probability.
      *
-     * The probability rule is provided by the probabilityCalculator
-     * lambda, keeping the calculation separate from the main
-     * transmission procedure.
-     *
-     * The result is clamped between 0.0 and 1.0 so that it remains
-     * within the valid probability range.
+     * The probability calculation is delegated to the configured
+     * lambda function. The result is restricted to the range 0.0
+     * to 1.0 to ensure a valid probability value.
      *
      * @param disease the disease being transmitted
-     * @param target the human who may receive the disease
+     * @param target the potential recipient
      * @return the calculated transmission probability
      */
     private double calculateTransmissionProbability(
@@ -157,7 +182,7 @@ public class DirectTransmission implements TransmissionStrategy {
         double probability =
                 probabilityCalculator.applyAsDouble(disease, target);
 
-        // Ensure the probability remains between 0.0 and 1.0.
+        // Keep the probability within its valid range.
         return Math.max(0.0, Math.min(1.0, probability));
     }
 }
