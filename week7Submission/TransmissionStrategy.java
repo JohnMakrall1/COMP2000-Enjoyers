@@ -7,8 +7,8 @@
  * This interface supports the Strategy design pattern, by allowing the
  * transmission algorithm to be changed without modifying the Disease class.
  * 
- * The @FunctionalInterface annotation also allows strategies to be 
- * implemented using lambda expressions.
+ * The @FunctionalInterface annotation and abstract method also allows 
+ * strategies to be implemented using lambda expressions.
  */
 @FunctionalInterface
 public interface TransmissionStrategy {
